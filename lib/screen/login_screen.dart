@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:apps/controller/auth_controller.dart';
+import 'package:apps/controller/login_controller.dart';
 import 'package:apps/data_network_coller/data_utility/urls.dart';
 import 'package:apps/data_network_coller/model_api/usermodel.dart';
 import 'package:apps/data_network_coller/network_coller.dart';
@@ -12,6 +11,7 @@ import 'package:apps/widget/background.dart';
 import 'package:apps/widget/snack_messege.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Loginscreen extends StatefulWidget {
@@ -22,10 +22,10 @@ class Loginscreen extends StatefulWidget {
 }
 
 class _LoginscreenState extends State<Loginscreen> {
-  TextEditingController _emailtext = TextEditingController();
+  TextEditingController  _emailtext = TextEditingController();
   TextEditingController _passwordtext = TextEditingController();
   GlobalKey<FormState> _globalKey = GlobalKey<FormState>();
-  bool _loginprogress = false;
+  Logincontroller _logincontroller = Get.find<Logincontroller>();
 
   @override
   Widget build(BuildContext context) {
@@ -49,14 +49,6 @@ class _LoginscreenState extends State<Loginscreen> {
                     decoration: const InputDecoration(
                       hintText: "Email",
                     ),
-                    // validator: (String?value){
-                    //   if(value?.trim().isEmpty?? true){
-                    //     return "Enter value";
-                    //   }
-                    //   else{
-                    //     return null;
-                    //   }
-                    // }
                     validator: (String? valu) {
                       if (valu?.trim().isEmpty ?? true) {
                         return 'Enter valid number';
@@ -85,17 +77,20 @@ class _LoginscreenState extends State<Loginscreen> {
                   ),
                   SizedBox(
                       width: double.infinity,
-                      child: Visibility(
-                        visible: _loginprogress == false,
-                        replacement:
-                            Center(child: CupertinoActivityIndicator()),
-                        child: ElevatedButton(
-                            onPressed: () {
-                              login();
-                            },
-                            child: Icon(Icons.arrow_circle_right)),
-                      )),
-                  SizedBox(
+                      child: GetBuilder<Logincontroller>(
+                          builder: (logincontroller) {
+                        return Visibility(
+                          visible: logincontroller.loginprogress == false,
+                          replacement:
+                              Center(child: CupertinoActivityIndicator()),
+                          child: ElevatedButton(
+                              onPressed: () {
+                                login();
+                              },
+                              child: Icon(Icons.arrow_circle_right)),
+                        );
+                      })),
+                 const SizedBox(
                     height: 48,
                   ),
                   TextButton(
@@ -112,7 +107,7 @@ class _LoginscreenState extends State<Loginscreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
+                   const   Text(
                         "Dont have an account?",
                         style: TextStyle(
                             fontSize: 16,
@@ -126,7 +121,7 @@ class _LoginscreenState extends State<Loginscreen> {
                               return Signupscreen();
                             }));
                           },
-                          child: Text(
+                          child:const Text(
                             "Sign up",
                             style: TextStyle(fontSize: 16),
                           ))
@@ -145,39 +140,13 @@ class _LoginscreenState extends State<Loginscreen> {
     if (!_globalKey.currentState!.validate()) {
       return;
     }
-    _loginprogress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    Networkresponce responce = await Networkcoller().Postrequest(Urls.login,
-        body: {
-          "email": _emailtext.text.trim(),
-          "password": _passwordtext.text,
-        },
-        islogin: true);
-
-    _loginprogress = false;
-    if (mounted) {
-      setState(() {});
-    }
-    if (responce.isSuccess) {
-      await Authcontroller.saveuserinformation(responce.jsonresponce["token"],
-          Data.fromJson(responce.jsonresponce["data"]));
-
-      if (mounted) {
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return Mainbuttonnavscreen();
-        }));
-      }
+    final responce = await _logincontroller.login(
+        _emailtext.text.toString(), _passwordtext.text);
+    if (responce) {
+      Get.offAll(const Mainbuttonnavscreen());
     } else {
-      if (responce.statuscode == 401) {
-        if (mounted) {
-          SnackMessege(context, "Plesase enter correct email or pass");
-        }
-      } else {
-        if (mounted) {
-          SnackMessege(context, "Login faild try agein");
-        }
+      if (mounted) {
+        SnackMessege(context, _logincontroller.loginMassage);
       }
     }
   }

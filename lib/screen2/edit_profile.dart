@@ -7,6 +7,7 @@ import 'package:apps/data_network_coller/network_coller.dart';
 import 'package:apps/data_network_coller/network_responce.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../widget/profile_summary.dart';
@@ -27,13 +28,14 @@ class _EditprofilescreenState extends State<Editprofilescreen> {
   final TextEditingController _passwordtext = TextEditingController();
   XFile? photo;
   bool upgradeprofileinprogress = false;
+  Authcontroller authcontroller = Get.find<Authcontroller>();
 
   Future<void> getupdateprofile() async {
     upgradeprofileinprogress = true;
     if (mounted) {
       setState(() {});
     }
-    String ?photoInBase64;
+    String? photoInBase64;
     Map<String, dynamic> inputdata = {
       "email": _emailtext.text.trim(),
       "firstName": _fastnametext.text.trim(),
@@ -45,10 +47,10 @@ class _EditprofilescreenState extends State<Editprofilescreen> {
     if (_passwordtext.text.isNotEmpty) {
       inputdata["password"] = _passwordtext.text;
     }
-    if(photo!=null){
-      List<int>imageByte=await photo!.readAsBytes();
-       photoInBase64=base64Encode(imageByte);
-      inputdata["photo"]=photoInBase64;
+    if (photo != null) {
+      List<int> imageByte = await photo!.readAsBytes();
+      photoInBase64 = base64Encode(imageByte);
+      inputdata["photo"] = photoInBase64;
     }
 
     final Networkresponce networkresponce =
@@ -60,13 +62,12 @@ class _EditprofilescreenState extends State<Editprofilescreen> {
     }
 
     if (networkresponce.isSuccess) {
-      Authcontroller.upgradeinformation(Data(
-        email: _emailtext.text.trim(),
-        firstName: _fastnametext.text.trim(),
-        lastName: _lastnametext.text.trim(),
-        mobile: _mobiletext.text.trim(),
-        photo: photoInBase64??Authcontroller.user?.photo
-      ));
+      Get.find<Authcontroller>().upgradeinformation(Data(
+          email: _emailtext.text.trim(),
+          firstName: _fastnametext.text.trim(),
+          lastName: _lastnametext.text.trim(),
+          mobile: _mobiletext.text.trim(),
+          photo: photoInBase64 ?? authcontroller.user?.photo));
       if (mounted) {
         SnackMessege(context, "Update profile Success");
       }
@@ -81,10 +82,10 @@ class _EditprofilescreenState extends State<Editprofilescreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _emailtext.text = Authcontroller.user!.email ?? "";
-    _fastnametext.text = Authcontroller.user!.firstName ?? "";
-    _lastnametext.text = Authcontroller.user!.lastName ?? "";
-    _mobiletext.text = Authcontroller.user!.mobile ?? "";
+    _emailtext.text = authcontroller.user!.email ?? "";
+    _fastnametext.text = authcontroller.user!.firstName ?? "";
+    _lastnametext.text = authcontroller.user!.lastName ?? "";
+    _mobiletext.text = authcontroller.user!.mobile ?? "";
   }
 
   @override
@@ -133,7 +134,9 @@ class _EditprofilescreenState extends State<Editprofilescreen> {
                               child: InkWell(
                                 onTap: () async {
                                   final XFile? image = await ImagePicker()
-                                      .pickImage(source: ImageSource.camera,imageQuality: 50);
+                                      .pickImage(
+                                          source: ImageSource.camera,
+                                          imageQuality: 50);
                                   if (image != null) {
                                     photo = image;
                                     if (mounted) {

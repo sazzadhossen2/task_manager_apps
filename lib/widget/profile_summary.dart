@@ -7,39 +7,47 @@ import 'package:apps/screen2/edit_profile.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class Profilesummary extends StatelessWidget {
   Profilesummary({super.key,  this.enabletap=true});
   final bool enabletap;
 
+  Authcontroller authcontroller=Get.find<Authcontroller>();
   @override
   Widget build(BuildContext context) {
-    Uint8List imageByte =Base64Decoder().convert(Authcontroller.user?.photo??"");
 
-    return  ListTile(
-      onTap: (){
-        if(enabletap) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return Editprofilescreen();
-          }));
-        }},
-      leading: CircleAvatar(
-        child: Authcontroller.user?.photo==null? Icon(Icons.person):
-        Image.memory(imageByte),
-      ),
-      title: Text(fullname),
-      subtitle: Text(Authcontroller.user?.email??''),
-      trailing: IconButton(
-        onPressed: ()async{
-          await Authcontroller.clearAuth();
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context)=>Loginscreen()), (route) => false);
+    Uint8List imageByte =Base64Decoder().convert(authcontroller.user?.photo??"");
+    return  GetBuilder<Authcontroller>(
+      builder: (authcontroller)=>
 
-        }, icon:Icon( Icons.logout),
-      ),
-      tileColor: Colors.green,
+        ListTile(
+
+        onTap: (){
+          if(enabletap) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return Editprofilescreen();
+            }));
+          }},
+        leading: CircleAvatar(
+          child: authcontroller.user?.photo==null? Icon(Icons.person):
+          Image.memory(imageByte),
+        ),
+        title: Text(fullname(authcontroller)),
+        subtitle: Text(authcontroller.user?.email??''),
+        trailing: IconButton(
+          onPressed: ()async{
+            await Authcontroller.clearAuth();
+            Get.offAll(Loginscreen());
+
+          }, icon:Icon( Icons.logout),
+        ),
+        tileColor: Colors.green,
+      )
+
     );
   }
-  String get fullname{
-return ("${Authcontroller.user?.firstName??""} ${Authcontroller.user?.lastName??""}");
+  String  fullname (Authcontroller authcontroller){
+return ("${authcontroller.user?.firstName??""} ${authcontroller.user?.lastName??""}");
   }
 }

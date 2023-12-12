@@ -6,6 +6,8 @@ import 'package:apps/widget/background.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Splashscreen extends StatefulWidget {
@@ -25,12 +27,10 @@ class _SplashscreenState extends State<Splashscreen> {
   }
 
 Future< void> gotoLogin()async{
-final bool isloogin= await Authcontroller.cheekAuth();
+final bool isloogin= await  Get.find< Authcontroller>().cheekAuth();
   Future.delayed(Duration(seconds: 3)).then((value) =>
-  Navigator.push(context as BuildContext,MaterialPageRoute(builder: (context)=>
-    isloogin?
-    Mainbuttonnavscreen() : Loginscreen(),
-  ))
+    Get.offAll( isloogin?
+    Mainbuttonnavscreen() : Loginscreen(),)
   );
 }
   @override
