@@ -1,33 +1,37 @@
 import 'dart:convert';
 
 import 'package:apps/data_network_coller/model_api/usermodel.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Authcontroller{
+class Authcontroller extends GetxController{
  static String ? token;
- static Data ?user;
-static  Future<void> saveuserinformation(String t,Data model)async{
+  Data ?user;
+  Future<void> saveuserinformation(String t,Data model)async{
     SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
     await sharedPreferences.setString("token",t);
     await sharedPreferences.setString("user",jsonEncode( model.toJson()));
     token=t;
     user=model;
+    update();
   }
 
- static  Future<void> upgradeinformation(Data model)async{
+   Future<void> upgradeinformation(Data model)async{
    SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
    await sharedPreferences.setString("user",jsonEncode( model.toJson()));
    user=model;
+   update();
  }
 
 
-static Future<void>initializeduser()async{
+ Future<void>initializeduser()async{
     SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
    token= sharedPreferences.getString("token");
    user= Data.fromJson(jsonDecode(sharedPreferences.getString("user")??"{}"));
+   update();
 }
 
-static Future<bool>cheekAuth()async{
+ Future<bool>cheekAuth()async{
   SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
   String? token= sharedPreferences.getString("token");
   if(token!=null){
@@ -38,14 +42,14 @@ static Future<bool>cheekAuth()async{
     return false;
   }
 }
-static Future<void> clearAuth()async{
+ static Future<void> clearAuth()async{
     SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
     await sharedPreferences.clear();
 
 }
 
-static Future<void>writeEmailverified()async{
-  final SharedPreferences sharedPreferences= await SharedPreferences.getInstance();
+  Future<void>writeEmailverified()async{
+   SharedPreferences sharedPreferences= await SharedPreferences.getInstance();
   await sharedPreferences.getString("email");
 }
 

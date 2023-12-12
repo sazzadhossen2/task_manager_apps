@@ -6,6 +6,8 @@ import 'package:apps/screen/login_screen.dart';
 import 'package:apps/widget/background.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../controller/signup_controller.dart';
 import '../widget/snack_messege.dart';
 class Signupscreen extends StatefulWidget {
   const Signupscreen({super.key});
@@ -21,7 +23,7 @@ class _SignupscreenState extends State<Signupscreen> {
   final TextEditingController _mobiletext=TextEditingController();
   final TextEditingController _passtext =TextEditingController();
 final GlobalKey<FormState>_formkey=GlobalKey<FormState>();
-  bool _signupinprogress=false;
+  Signupcontroller _signupcontroller=Get.find<Signupcontroller>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,13 +107,15 @@ final GlobalKey<FormState>_formkey=GlobalKey<FormState>();
                   SizedBox(height: 48,),
                   SizedBox(
                       width: double.infinity,
-                      child: Visibility(
-                        visible: _signupinprogress==false,
-                        replacement: Center(child: CupertinoActivityIndicator()),
-                        child: ElevatedButton(onPressed: (){
-                          signup();
-                        }
-                      , child: Icon(Icons.arrow_circle_right)),
+                      child: GetBuilder<Signupcontroller>(
+                        builder:(signupcontrollers)=> Visibility(
+                          visible: signupcontrollers.signupinprogress==false,
+                          replacement: Center(child: CupertinoActivityIndicator()),
+                          child: ElevatedButton(onPressed: (){
+                            signup();
+                          }
+                        , child: Icon(Icons.arrow_circle_right)),
+                        ),
                       )),
                   SizedBox(height: 20,),
                   Row(
@@ -137,35 +141,16 @@ final GlobalKey<FormState>_formkey=GlobalKey<FormState>();
 
   Future<void>signup()  async{
     if(_formkey.currentState!.validate()){
-      _signupinprogress=true;
-      if(mounted){
-        setState(() {
-
-        });
-      }
-      final Networkresponce responce=await Networkcoller().Postrequest(
-          Urls.registation,body: {
-        "email":_emailtext.text.toString(),
-        "firstName":_fastnametext.text.toString(),
-        "lastName":_lastnametext.text.toString(),
-        "mobile":_mobiletext.text.toString(),
-        "password":_passtext.text.toString(),
-        "photo":""
-      });
-      _signupinprogress=false;
-      if(mounted){
-        setState(() {
-        });
-      }
-      if(responce.isSuccess){
+  final responce=await _signupcontroller.signup(_emailtext.text, _fastnametext.text, _lastnametext.text, _mobiletext.text, _passtext.text);
+      if(responce){
         _clratmethod();
         if(mounted){
-          SnackMessege(context, 'Account has been creat');
+          SnackMessege(context, _signupcontroller.signuptext);
         }
       }
       else{
         if(mounted){
-          SnackMessege(context, "Account has not creat",true);
+          SnackMessege(context, _signupcontroller.signuptext);
         }
       }
     }

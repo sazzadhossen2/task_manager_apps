@@ -7,57 +7,43 @@ import 'package:apps/screen/pinverification.dart';
 import 'package:apps/widget/background.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../controller/forgetcontroller.dart';
 import '../data_network_coller/model_api/newtask.dart';
 import '../widget/snack_messege.dart';
-
+import 'login_screen.dart';
 class Forgotpasswordscreen extends StatefulWidget {
   Forgotpasswordscreen({super.key});
-
-
-
   @override
   State<Forgotpasswordscreen> createState() => _ForgotpasswordscreenState();
 }
-
 class _ForgotpasswordscreenState extends State<Forgotpasswordscreen> {
-  final TextEditingController _emailtext=TextEditingController();
-  bool getemail=false;
+  final TextEditingController _emailtext = TextEditingController();
+  bool getemail = false;
 
-  Future<void> getemailotp(String email) async {
-
-    getemail=true;
-    if(mounted){
-      setState(() {
-
-      });
-    }
-    final Networkresponce networkresponce =
-    await Networkcoller().getrequest(Urls.emailotp(email));
-    print(Urls.emailotp(email));
-    getemail=false;
-    if(mounted){
-      setState(() {
-
-      });
-    }
-    if (networkresponce.isSuccess) {
-      //await Authcontroller.writeEmailverified(networkresponce.jsonresponce["email"]);
+  Forgercontroller _forgercontroller = Get.find<Forgercontroller>();
+  Future<void> getemailotp() async {
+    final responce = await _forgercontroller.getemailotp(_emailtext.text);
+    print(Urls.emailotp(_emailtext.text));
+    if (responce) {
+     // await Get.find<Authcontroller>().writeEmailverified(networkresponce.jsonresponce["email"]);
+      //await Get.find<Authcontroller>().writeEmailverified();
       if (mounted) {
-        SnackMessege(context, "OTP Send success");
-      }
 
-      if (mounted) {
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return Pinverification(email: _emailtext.text.toString(),);
-        }));
+        SnackMessege(context, _forgercontroller.forgetText);
       }
+      Get.offAll( Pinverification(
+            email: _emailtext.text.toString(),
+      ) );
+
     } else {
       if (mounted) {
-        SnackMessege(context, "OTP Failed");
+        SnackMessege(context, _forgercontroller.forgetText);
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -88,15 +74,16 @@ class _ForgotpasswordscreenState extends State<Forgotpasswordscreen> {
                 ),
                 SizedBox(
                     width: double.infinity,
-                    child: Visibility(
-
-                      visible: getemail==false,
-                      replacement: Center(child: CircularProgressIndicator()),
-                      child: ElevatedButton(
-                          onPressed: () {
-                            getemailotp(_emailtext.text.toString());
-                          },
-                          child: Icon(Icons.arrow_circle_right)),
+                    child: GetBuilder<Forgercontroller>(
+                      builder: (forgetcontrollers) => Visibility(
+                        visible: forgetcontrollers.getemail == false,
+                        replacement: Center(child: CircularProgressIndicator()),
+                        child: ElevatedButton(
+                            onPressed: () {
+                              getemailotp();
+                            },
+                            child: Icon(Icons.arrow_circle_right)),
+                      ),
                     )),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -105,7 +92,11 @@ class _ForgotpasswordscreenState extends State<Forgotpasswordscreen> {
                       "Have account?",
                       style: TextStyle(fontSize: 16, color: Colors.black54),
                     ),
-                    TextButton(onPressed: () {}, child: Text("Sign in"))
+                    TextButton(
+                        onPressed: () {
+                          Loginscreen();
+                        },
+                        child: Text("Sign in"))
                   ],
                 )
               ],
