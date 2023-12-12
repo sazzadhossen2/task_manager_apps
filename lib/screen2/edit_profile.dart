@@ -7,8 +7,10 @@ import 'package:apps/data_network_coller/network_coller.dart';
 import 'package:apps/data_network_coller/network_responce.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../controller/editprofilr_controller.dart';
 import '../widget/profile_summary.dart';
 import '../widget/snack_messege.dart';
 
@@ -25,54 +27,55 @@ class _EditprofilescreenState extends State<Editprofilescreen> {
   final TextEditingController _lastnametext = TextEditingController();
   final TextEditingController _mobiletext = TextEditingController();
   final TextEditingController _passwordtext = TextEditingController();
-  XFile? photo;
-  bool upgradeprofileinprogress = false;
-
+  // XFile? photo;
+  // bool upgradeprofileinprogress = false;
+   Authcontroller authcontroller = Get.find<Authcontroller>();
+  Editprofilecontroller _editprofilecontroller=Get.find<Editprofilecontroller>();
   Future<void> getupdateprofile() async {
-    upgradeprofileinprogress = true;
-    if (mounted) {
-      setState(() {});
-    }
-    String ?photoInBase64;
-    Map<String, dynamic> inputdata = {
-      "email": _emailtext.text.trim(),
-      "firstName": _fastnametext.text.trim(),
-      "lastName": _lastnametext.text.trim(),
-      "mobile": _mobiletext.text.trim(),
-      "password": "",
-      "photo": ""
-    };
-    if (_passwordtext.text.isNotEmpty) {
-      inputdata["password"] = _passwordtext.text;
-    }
-    if(photo!=null){
-      List<int>imageByte=await photo!.readAsBytes();
-       photoInBase64=base64Encode(imageByte);
-      inputdata["photo"]=photoInBase64;
-    }
+    // upgradeprofileinprogress = true;
+    // if (mounted) {
+    //   setState(() {});
+    // }
+    // String? photoInBase64;
+    // Map<String, dynamic> inputdata = {
+    //   "email": _emailtext.text.trim(),
+    //   "firstName": _fastnametext.text.trim(),
+    //   "lastName": _lastnametext.text.trim(),
+    //   "mobile": _mobiletext.text.trim(),
+    //   "password": "",
+    //   "photo": ""
+    // };
+    // if (_passwordtext.text.isNotEmpty) {
+    //   inputdata["password"] = _passwordtext.text;
+    // }
+    // if (photo != null) {
+    //   List<int> imageByte = await photo!.readAsBytes();
+    //   photoInBase64 = base64Encode(imageByte);
+    //   inputdata["photo"] = photoInBase64;
+    // }
+    //
+    // final Networkresponce networkresponce =
+    //     await Networkcoller().Postrequest(Urls.upgradeprofile, body: inputdata);
+    //
+    // upgradeprofileinprogress = false;
+    // if (mounted) {
+    //   setState(() {});
+    // }
+final responce =await _editprofilecontroller.getupdateprofile(
+    _emailtext.text, _fastnametext.text, _lastnametext.text,_mobiletext.text, _passwordtext.text);
+    if (responce) {
+      // Get.find<Authcontroller>().upgradeinformation(Data(
+      //     email: _emailtext.text.trim(),
+      //     firstName: _fastnametext.text.trim(),
+      //     lastName: _lastnametext.text.trim(),
+      //     mobile: _mobiletext.text.trim(),
+      //     photo: photoInBase64 ?? authcontroller.user?.photo));
+      // if (mounted) {
+        SnackMessege(context, _editprofilecontroller.editText);
 
-    final Networkresponce networkresponce =
-        await Networkcoller().Postrequest(Urls.upgradeprofile, body: inputdata);
-
-    upgradeprofileinprogress = false;
-    if (mounted) {
-      setState(() {});
-    }
-
-    if (networkresponce.isSuccess) {
-      Authcontroller.upgradeinformation(Data(
-        email: _emailtext.text.trim(),
-        firstName: _fastnametext.text.trim(),
-        lastName: _lastnametext.text.trim(),
-        mobile: _mobiletext.text.trim(),
-        photo: photoInBase64??Authcontroller.user?.photo
-      ));
-      if (mounted) {
-        SnackMessege(context, "Update profile Success");
-      }
     } else {
       if (mounted) {
-        SnackMessege(context, "Update profile failed");
+        SnackMessege(context, _editprofilecontroller.editText);
       }
     }
   }
@@ -81,10 +84,10 @@ class _EditprofilescreenState extends State<Editprofilescreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _emailtext.text = Authcontroller.user!.email ?? "";
-    _fastnametext.text = Authcontroller.user!.firstName ?? "";
-    _lastnametext.text = Authcontroller.user!.lastName ?? "";
-    _mobiletext.text = Authcontroller.user!.mobile ?? "";
+    _emailtext.text = authcontroller.user!.email ?? "";
+    _fastnametext.text = authcontroller.user!.firstName ?? "";
+    _lastnametext.text = authcontroller.user!.lastName ?? "";
+    _mobiletext.text = authcontroller.user!.mobile ?? "";
   }
 
   @override
@@ -133,9 +136,11 @@ class _EditprofilescreenState extends State<Editprofilescreen> {
                               child: InkWell(
                                 onTap: () async {
                                   final XFile? image = await ImagePicker()
-                                      .pickImage(source: ImageSource.camera,imageQuality: 50);
+                                      .pickImage(
+                                          source: ImageSource.camera,
+                                          imageQuality: 50);
                                   if (image != null) {
-                                    photo = image;
+                                    _editprofilecontroller.photo = image;
                                     if (mounted) {
                                       setState(() {});
                                     }
@@ -143,8 +148,8 @@ class _EditprofilescreenState extends State<Editprofilescreen> {
                                 },
                                 child: Container(
                                   child: Visibility(
-                                      visible: photo == null,
-                                      replacement: Text(photo?.name ?? ""),
+                                      visible: _editprofilecontroller.photo == null,
+                                      replacement: Text(_editprofilecontroller.photo?.name ?? ""),
                                       child: Text("Select a photo")),
                                 ),
                               )),
@@ -196,13 +201,15 @@ class _EditprofilescreenState extends State<Editprofilescreen> {
                     ),
                     SizedBox(
                         width: double.infinity,
-                        child: Visibility(
-                          visible: upgradeprofileinprogress == false,
-                          replacement:
-                              Center(child: CircularProgressIndicator()),
-                          child: ElevatedButton(
-                              onPressed: getupdateprofile,
-                              child: Icon(Icons.arrow_circle_right_rounded)),
+                        child: GetBuilder<Editprofilecontroller>(
+                          builder:(editprofile)=> Visibility(
+                            visible: editprofile.upgradeprofile == false,
+                            replacement:
+                                Center(child: CircularProgressIndicator()),
+                            child: ElevatedButton(
+                                onPressed: getupdateprofile,
+                                child: Icon(Icons.arrow_circle_right_rounded)),
+                          ),
                         ))
                   ],
                 ),

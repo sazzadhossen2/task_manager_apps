@@ -6,6 +6,9 @@ import 'package:apps/widget/profile_summary.dart';
 import 'package:apps/widget/snack_messege.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../controller/newtask_controller.dart';
 
 class Addnewtask extends StatefulWidget {
   const Addnewtask({super.key});
@@ -111,6 +114,7 @@ class _AddnewtaskState extends State<Addnewtask> {
     if(responcer.isSuccess){
       _discriptText.clear();
       _subjectText.clear();
+      Get.find<Newtaskcontroller>().getnewscreen();
       if(mounted){
         SnackMessege(context," new task add");
       }
